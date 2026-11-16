@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexusMath | All-in-One STEM Study Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- KaTeX for Crisp Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <!-- Tone.js for Pomodoro Audio Alerts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        /* Theme Variables */
+        :root {
+            --bg-main: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-elevated: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --border-color: #334155;
+            --base-font-size: 16px;
+        }
+
+        [data-theme="light"] {
+            --bg-main: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-elevated: #f1f5f9;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --border-color: #e2e8f0;
+        }
+
+        [data-theme="midnight"] {
+            --bg-main: #050814;
+            --bg-surface: #0b1126;
+            --bg-elevated: #151e3f;
+            --text-primary: #e2e8f0;
+            --text-secondary: #7dd3fc;
+            --accent: #818cf8;
+            --accent-hover: #6366f1;
+            --border-color: #1e293b;
+        }
+
+        [data-theme="sepia"] {
+            --bg-main: #f4ecd8;
+            --bg-surface: #fbf7ed;
+            --bg-elevated: #eae0c8;
+            --text-primary: #3b3224;
+            --text-secondary: #6e5d44;
+            --accent: #b45309;
+            --accent-hover: #92400e;
+            --border-color: #dcd0b4;
+        }
+
+        html {
+            font-size: var(--base-font-size);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        .font-mono-code {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .bg-main { background-color: var(--bg-main); }
+        .bg-surface { background-color: var(--bg-surface); }
+        .bg-elevated { background-color: var(--bg-elevated); }
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .border-theme { border-color: var(--border-color); }
+        .accent-bg { background-color: var(--accent); color: #ffffff; }
+        .accent-bg:hover { background-color: var(--accent-hover); }
+        .accent-text { color: var(--accent); }
+        .accent-border { border-color: var(--accent); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        /* Flashcard 3D Flip */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+
+        /* KaTeX scaling adjustment */
+        .katex { font-size: 1.15em; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden selection:bg-sky-500 selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-30 bg-surface border-b border-theme px-4 py-3 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3">
+            <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-xl bg-elevated text-primary hover:opacity-80" aria-label="Toggle Menu">
+                <i class="ph ph-list text-xl"></i>
+            </button>
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl accent-bg flex items-center justify-center shadow-md">
+                    <i class="ph-bold ph-function text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight leading-none">NexusMath</h1>
+                    <p class="text-xs text-secondary mt-0.5 hidden sm:block">STEM Study & Formula Hub</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Quick Status Pills -->
+        <div class="hidden md:flex items-center gap-3">
+            <button onclick="switchMainView('formulas')" id="nav-pill-formulas" class="px-3.5 py-1.5 rounded-xl text-sm font-medium transition accent-bg">
+                <i class="ph ph-books mr-1.5"></i>Formulas
+            </button>
+            <button onclick="switchMainView('flashcards')" id="nav-pill-flashcards" class="px-3.5 py-1.5 rounded-xl text-sm font-medium bg-elevated text-primary hover:opacity-80 transition">
+                <i class="ph ph-cards mr-1.5"></i>Flashcards
+            </button>
+            <button onclick="switchMainView('notes')" id="nav-pill-notes" class="px-3.5 py-1.5 rounded-xl text-sm font-medium bg-elevated text-primary hover:opacity-80 transition">
+                <i class="ph ph-notepad mr-1.5"></i>Scratchpad
+            </button>
+        </div>
+
+        <!-- Right Controls: Mode Badge, Calc Toggle, jsDelivr Runner, Settings -->
+        <div class="flex items-center gap-2">
+            <button onclick="toggleAngleMode()" id="header-angle-badge" title="Toggle Degrees/Radians" class="px-2.5 py-1.5 rounded-xl bg-elevated border border-theme text-xs font-mono-code font-semibold accent-text hover:opacity-80 transition">
+                RAD
+            </button>
+
+            <button onclick="toggleRightDrawer()" id="toggle-calc-btn" class="px-3 py-2 rounded-xl bg-elevated border border-theme text-sm font-medium flex items-center gap-1.5 hover:opacity-85 transition" title="Toggle Calculator & Timer">
+                <i class="ph ph-calculator text-lg accent-text"></i>
+                <span class="hidden sm:inline">Tools</span>
+            </button>
+
+            <button onclick="openJsdelivrModal()" id="header-jsdelivr-btn" class="relative px-3 py-2 rounded-xl bg-elevated border border-theme text-sm font-medium flex items-center gap-1.5 hover:opacity-85 transition" title="Open Helper">
+                <i class="ph ph-browser text-lg accent-text"></i>
+                <span class="hidden sm:inline">Helper</span>
+            </button>
+
+            <button onclick="openSettingsModal()" class="p-2 rounded-xl bg-elevated border border-theme text-primary hover:opacity-85 transition" title="Settings" aria-label="Settings">
+                <i class="ph ph-gear text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main 3-Column Workspace -->
+    <div class="flex-1 flex relative overflow-hidden">
+
+        <!-- Left Sidebar: Subjects & Quick Sheet -->
+        <aside id="left-sidebar" class="fixed lg:static inset-y-0 left-0 z-20 w-64 bg-surface border-r border-theme transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex flex-col pt-16 lg:pt-0">
+            <div class="p-4 flex-1 overflow-y-auto space-y-6">
+                <!-- Mobile Nav Views -->
+                <div class="md:hidden space-y-1">
+                    <p class="text-xs font-semibold uppercase tracking-wider text-secondary px-2 mb-2">Workspace</p>
+                    <button onclick="switchMainView('formulas'); closeMobileMenu();" class="w-full text-left px-3 py-2 rounded-xl text-sm font-medium bg-elevated flex items-center gap-2">
+                        <i class="ph ph-books accent-text"></i> Formula Hub
+                    </button>
+                    <button onclick="switchMainView('flashcards'); closeMobileMenu();" class="w-full text-left px-3 py-2 rounded-xl text-sm font-medium hover:bg-elevated flex items-center gap-2">
+                        <i class="ph ph-cards accent-text"></i> Flashcard Quiz
+                    </button>
+                    <button onclick="switchMainView('notes'); closeMobileMenu();" class="w-full text-left px-3 py-2 rounded-xl text-sm font-medium hover:bg-elevated flex items-center gap-2">
+                        <i class="ph ph-notepad accent-text"></i> Study Scratchpad
+                    </button>
+                </div>
+
+                <!-- Pinned Quick Sheet -->
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-secondary px-2 mb-2">Exam Prep</p>
+                    <button onclick="selectCategory('pinned')" id="cat-btn-pinned" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium transition hover:bg-elevated">
+                        <span class="flex items-center gap-2.5">
+                            <i class="ph-fill ph-push-pin text-amber-400"></i>
+                            <span>Pinned Quick Sheet</span>
+                        </span>
+                        <span id="pinned-count-badge" class="text-xs px-2 py-0.5 rounded-full bg-elevated font-mono-code">0</span>
+                    </button>
+                </div>
+
+                <!-- Math Disciplines -->
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-secondary px-2 mb-2">Subjects</p>
+                    <nav class="space-y-1" id="category-nav">
+                        <button onclick="selectCategory('all')" id="cat-btn-all" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium accent-bg transition">
+                            <span class="flex items-center gap-2.5"><i class="ph ph-squares-four"></i> All Formulas</span>
+                        </button>
+                        <button onclick="selectCategory('Algebra')" id="cat-btn-Algebra" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-elevated transition">
+                            <span class="flex items-center gap-2.5"><i class="ph ph-x-square"></i> Algebra 1 & 2</span>
+                        </button>
+                        <button onclick="selectCategory('Geometry')" id="cat-btn-Geometry" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-elevated transition">
+                            <span class="flex items-center gap-2.5"><i class="ph ph-triangle"></i> Geometry</span>
+                        </button>
+                        <button onclick="selectCategory('Trigonometry')" id="cat-btn-Trigonometry" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-elevated transition">
+                            <span class="flex items-center gap-2.5"><i class="ph ph-wave-sine"></i> Trigonometry</span>
+                        </button>
+                        <button onclick="selectCategory('Pre-Calculus')" id="cat-btn-Pre-Calculus" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-elevated transition">
+                            <span class="flex items-center gap-2.5"><i class="ph ph-chart-line-up"></i> Pre-Calculus</span>
+                        </button>
+                        <button onclick="selectCategory('Calculus')" id="cat-btn-Calculus" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-elevated transition">
+                            <span class="flex items-center gap-2.5"><i class="ph ph-infinity"></i> Calculus</span>
+                        </button>
+                        <button onclick="selectCategory('Statistics')" id="cat-btn-Statistics" class="category-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-elevated transition">
+                            <span class="flex items-center gap-2.5"><i class="ph ph-chart-bar"></i> Statistics</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Mini Pomodoro Widget in Left Sidebar Footer -->
+            <div class="p-4 border-t border-theme bg-elevated/40">
+                <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-secondary flex items-center gap-1">
+                        <i class="ph ph-timer accent-text"></i> Focus Timer
+                    </span>
+                    <span id="sidebar-pomo-status" class="text-[11px] px-2 py-0.5 rounded-full bg-surface text-secondary">Study</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span id="sidebar-pomo-display" class="font-mono-code text-xl font-bold">25:00</span>
+                    <div class="flex gap-1">
+                        <button onclick="togglePomodoro()" id="sidebar-pomo-btn" class="p-2 rounded-lg accent-bg text-xs" title="Start/Pause">
+                            <i class="ph-fill ph-play"></i>
+                        </button>
+                        <button onclick="resetPomodoro()" class="p-2 rounded-lg bg-surface border border-theme text-xs hover:opacity-80" title="Reset">
+                            <i class="ph ph-arrow-counter-clockwise"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto w-full">
+
+            <!-- VIEW 1: FORMULA REFERENCE HUB -->
+            <section id="view-formulas" class="space-y-6">
+                <!-- Header & Search Bar -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 id="current-category-title" class="text-2xl font-bold tracking-tight">All STEM Formulas</h2>
+                        <p id="current-category-subtitle" class="text-sm text-secondary mt-0.5">Browse, search, and pin essential formulas for quick exam review.</p>
+                    </div>
+                    <div class="relative w-full sm:w-72">
+                        <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary"></i>
+                        <input type="text" id="formula-search" placeholder="Search quadratic, derivative, sine..." 
+                            class="w-full pl-10 pr-9 py-2.5 rounded-xl bg-surface border border-theme text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 transition">
+                        <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-secondary hover:text-primary">
+                            <i class="ph-fill ph-x-circle"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Formula Cards Grid -->
+                <div id="formulas-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Populated via JS -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-formulas-state" class="hidden text-center py-16 bg-surface rounded-2xl border border-theme">
+                    <i class="ph ph-magnifying-glass text-4xl text-secondary mb-3"></i>
+                    <h3 class="text-lg font-semibold">No formulas found</h3>
+                    <p class="text-sm text-secondary mt-1 max-w-md mx-auto">Try adjusting your search keywords or switch to another subject category.</p>
+                    <button onclick="selectCategory('all'); clearSearch();" class="mt-4 px-4 py-2 rounded-xl accent-bg text-sm font-medium">
+                        Reset Filters
+                    </button>
+                </div>
+            </section>
+
+            <!-- VIEW 2: FLASHCARD / QUIZ MODE -->
+            <section id="view-flashcards" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight">Formula Flashcards</h2>
+                        <p class="text-sm text-secondary mt-0.5">Test your recall before exams. Click the card to reveal the formula.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <select id="flashcard-deck-select" onchange="initFlashcards()" class="px-3.5 py-2 rounded-xl bg-surface border border-theme text-sm focus:outline-none">
+                            <option value="all">All Subjects</option>
+                            <option value="pinned">Pinned Quick Sheet Only</option>
+                            <option value="Algebra">Algebra 1 & 2</option>
+                            <option value="Geometry">Geometry</option>
+                            <option value="Trigonometry">Trigonometry</option>
+                            <option value="Pre-Calculus">Pre-Calculus</option>
+                            <option value="Calculus">Calculus</option>
+                            <option value="Statistics">Statistics</option>
+                        </select>
+                        <button onclick="shuffleFlashcards()" class="p-2.5 rounded-xl bg-surface border border-theme hover:bg-elevated transition" title="Shuffle Deck">
+                            <i class="ph ph-shuffle text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="bg-surface p-4 rounded-2xl border border-theme flex items-center justify-between gap-4">
+                    <span id="flashcard-counter" class="text-sm font-mono-code font-semibold">Card 1 of 10</span>
+                    <div class="flex-1 h-2 bg-elevated rounded-full overflow-hidden">
+                        <div id="flashcard-progress" class="h-full accent-bg transition-all duration-300" style="width: 10%"></div>
+                    </div>
+                    <span id="flashcard-mastered" class="text-xs text-emerald-400 font-medium">Mastered: 0</span>
+                </div>
+
+                <!-- 3D Flip Card -->
+                <div class="perspective-1000 w-full max-w-2xl mx-auto h-80 cursor-pointer" onclick="flipFlashcard()">
+                    <div id="flashcard-inner" class="relative w-full h-full transition-transform duration-500 transform-style-3d">
+                        <!-- Front -->
+                        <div class="absolute inset-0 backface-hidden bg-surface border-2 border-theme rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-lg">
+                            <span id="fc-front-badge" class="px-3 py-1 rounded-full bg-elevated text-xs font-semibold accent-text mb-4">Algebra</span>
+                            <h3 id="fc-front-title" class="text-2xl sm:text-3xl font-bold mb-3">Quadratic Formula</h3>
+                            <p id="fc-front-hint" class="text-sm text-secondary max-w-md">Finds the roots of a standard quadratic equation ax² + bx + c = 0.</p>
+                            <span class="mt-8 text-xs text-secondary flex items-center gap-1.5">
+                                <i class="ph ph-hand-tap"></i> Click card to flip
+                            </span>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-surface border-2 accent-border rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-lg">
+                            <span class="text-xs uppercase tracking-wider text-secondary mb-3">Formula & Notes</span>
+                            <div id="fc-back-math" class="text-xl sm:text-2xl py-4 px-6 rounded-2xl bg-elevated/60 border border-theme my-2 overflow-x-auto max-w-full">
+                                <!-- KaTeX rendered -->
+                            </div>
+                            <p id="fc-back-desc" class="text-xs sm:text-sm text-secondary mt-3 max-w-md"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flashcard Controls -->
+                <div class="flex items-center justify-center gap-3 max-w-2xl mx-auto">
+                    <button onclick="prevFlashcard()" class="px-4 py-2.5 rounded-xl bg-surface border border-theme text-sm font-medium hover:bg-elevated transition flex items-center gap-1.5">
+                        <i class="ph ph-arrow-left"></i> Previous
+                    </button>
+                    <button onclick="markFlashcardMastered()" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition flex items-center gap-1.5 shadow-sm">
+                        <i class="ph-bold ph-check"></i> Got It!
+                    </button>
+                    <button onclick="nextFlashcard()" class="px-4 py-2.5 rounded-xl bg-surface border border-theme text-sm font-medium hover:bg-elevated transition flex items-center gap-1.5">
+                        Next <i class="ph ph-arrow-right"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- VIEW 3: STUDY SCRATCHPAD / NOTES -->
+            <section id="view-notes" class="hidden space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-2xl font-bold tracking-tight">Study Scratchpad</h2>
+                        <p class="text-sm text-secondary mt-0.5">Auto-saved locally in your browser. Great for working out multi-step problems.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="notes-save-status" class="text-xs text-secondary flex items-center gap-1">
+                            <i class="ph-fill ph-check-circle text-emerald-400"></i> Saved
+                        </span>
+                        <button onclick="copyNotes()" class="px-3 py-2 rounded-xl bg-surface border border-theme text-xs font-medium hover:bg-elevated transition flex items-center gap-1.5">
+                            <i class="ph ph-copy"></i> Copy
+                        </button>
+                        <button onclick="clearNotes()" class="px-3 py-2 rounded-xl bg-surface border border-theme text-xs font-medium text-rose-400 hover:bg-elevated transition flex items-center gap-1.5">
+                            <i class="ph ph-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Math Symbol Insert Toolbar -->
+                <div class="flex flex-wrap items-center gap-1.5 p-2 rounded-xl bg-surface border border-theme">
+                    <span class="text-xs text-secondary px-2">Insert Symbol:</span>
+                    <button onclick="insertSymbol('π')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">π</button>
+                    <button onclick="insertSymbol('θ')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">θ</button>
+                    <button onclick="insertSymbol('√()')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">√</button>
+                    <button onclick="insertSymbol('∫')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">∫</button>
+                    <button onclick="insertSymbol('∑')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">∑</button>
+                    <button onclick="insertSymbol('∞')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">∞</button>
+                    <button onclick="insertSymbol('≈')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">≈</button>
+                    <button onclick="insertSymbol('≠')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">≠</button>
+                    <button onclick="insertSymbol('≤')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">≤</button>
+                    <button onclick="insertSymbol('≥')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">≥</button>
+                    <button onclick="insertSymbol('Δ')" class="px-2.5 py-1 rounded-lg bg-elevated hover:opacity-80 font-mono-code text-sm">Δ</button>
+                </div>
+
+                <textarea id="study-scratchpad" rows="16" placeholder="Type your problem steps, definitions, or exam reminders here..." 
+                    class="w-full p-5 rounded-2xl bg-surface border border-theme font-mono-code text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-sky-500 resize-y"></textarea>
+            </section>
+
+        </main>
+
+        <!-- Right Dockable Panel: Scientific Calculator, Solvers & Pomodoro -->
+        <aside id="right-tools-drawer" class="fixed xl:static inset-y-0 right-0 z-20 w-80 sm:w-96 bg-surface border-l border-theme transform translate-x-full xl:translate-x-0 transition-transform duration-200 flex flex-col pt-16 xl:pt-0 shadow-2xl xl:shadow-none">
+            
+            <!-- Tool Tabs -->
+            <div class="flex border-b border-theme p-2 gap-1 bg-elevated/30">
+                <button onclick="switchToolTab('calc')" id="tool-tab-calc" class="flex-1 py-2 px-2 rounded-xl text-xs font-semibold accent-bg transition flex items-center justify-center gap-1">
+                    <i class="ph ph-calculator"></i> Calc
+                </button>
+                <button onclick="switchToolTab('solvers')" id="tool-tab-solvers" class="flex-1 py-2 px-2 rounded-xl text-xs font-semibold hover:bg-elevated transition flex items-center justify-center gap-1">
+                    <i class="ph ph-magic-wand"></i> Solvers
+                </button>
+                <button onclick="switchToolTab('pomodoro')" id="tool-tab-pomodoro" class="flex-1 py-2 px-2 rounded-xl text-xs font-semibold hover:bg-elevated transition flex items-center justify-center gap-1">
+                    <i class="ph ph-timer"></i> Timer
+                </button>
+            </div>
+
+            <!-- PANEL A: SCIENTIFIC CALCULATOR -->
+            <div id="tool-panel-calc" class="flex-1 flex flex-col p-4 overflow-y-auto">
+                <!-- Display -->
+                <div class="bg-main border border-theme rounded-2xl p-3.5 mb-3 flex flex-col justify-between min-h-[104px]">
+                    <div class="flex items-center justify-between text-xs text-secondary">
+                        <span id="calc-mode-indicator" class="font-mono-code font-semibold accent-text">RAD</span>
+                        <span id="calc-expression" class="font-mono-code truncate max-w-[200px]"></span>
+                    </div>
+                    <div id="calc-display" class="text-right font-mono-code text-2xl font-bold tracking-tight overflow-x-auto whitespace-nowrap mt-2">
+                        0
+                    </div>
+                </div>
+
+                <!-- Scientific Keypad -->
+                <div class="grid grid-cols-5 gap-1.5 font-mono-code text-xs sm:text-sm select-none">
+                    <!-- Row 1: Trig & Constants -->
+                    <button onclick="calcFunc('sin(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">sin</button>
+                    <button onclick="calcFunc('cos(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">cos</button>
+                    <button onclick="calcFunc('tan(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">tan</button>
+                    <button onclick="calcInput('π')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">π</button>
+                    <button onclick="calcInput('e')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">e</button>
+
+                    <!-- Row 2: Inverse Trig & Logs -->
+                    <button onclick="calcFunc('asin(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 text-[11px]">sin⁻¹</button>
+                    <button onclick="calcFunc('acos(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 text-[11px]">cos⁻¹</button>
+                    <button onclick="calcFunc('atan(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 text-[11px]">tan⁻¹</button>
+                    <button onclick="calcFunc('ln(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">ln</button>
+                    <button onclick="calcFunc('log(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">log</button>
+
+                    <!-- Row 3: Powers, Roots, Parens -->
+                    <button onclick="calcInput('^')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">xʸ</button>
+                    <button onclick="calcFunc('sqrt(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">√</button>
+                    <button onclick="calcInput('(')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">(</button>
+                    <button onclick="calcInput(')')" class="p-2.5 rounded-xl bg-elevated hover:opacity-80 font-medium">)</button>
+                    <button onclick="calcBackspace()" class="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 font-medium">DEL</button>
+
+                    <!-- Row 4: 7 8 9 / AC -->
+                    <button onclick="calcInput('7')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">7</button>
+                    <button onclick="calcInput('8')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">8</button>
+                    <button onclick="calcInput('9')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">9</button>
+                    <button onclick="calcInput('/')" class="p-3 rounded-xl bg-elevated hover:opacity-80 font-bold text-base accent-text">÷</button>
+                    <button onclick="calcClear()" class="p-3 rounded-xl bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 font-bold">AC</button>
+
+                    <!-- Row 5: 4 5 6 * Ans -->
+                    <button onclick="calcInput('4')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">4</button>
+                    <button onclick="calcInput('5')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">5</button>
+                    <button onclick="calcInput('6')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">6</button>
+                    <button onclick="calcInput('*')" class="p-3 rounded-xl bg-elevated hover:opacity-80 font-bold text-base accent-text">×</button>
+                    <button onclick="calcUseAns()" class="p-3 rounded-xl bg-elevated hover:opacity-80 text-xs font-semibold">ANS</button>
+
+                    <!-- Row 6: 1 2 3 - % -->
+                    <button onclick="calcInput('1')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">1</button>
+                    <button onclick="calcInput('2')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">2</button>
+                    <button onclick="calcInput('3')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">3</button>
+                    <button onclick="calcInput('-')" class="p-3 rounded-xl bg-elevated hover:opacity-80 font-bold text-base accent-text">−</button>
+                    <button onclick="calcInput('!')" class="p-3 rounded-xl bg-elevated hover:opacity-80 font-semibold">n!</button>
+
+                    <!-- Row 7: 0 . = + -->
+                    <button onclick="calcInput('0')" class="col-span-2 p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">0</button>
+                    <button onclick="calcInput('.')" class="p-3 rounded-xl bg-main border border-theme hover:bg-elevated font-semibold text-base">.</button>
+                    <button onclick="calcInput('+')" class="p-3 rounded-xl bg-elevated hover:opacity-80 font-bold text-base accent-text">+</button>
+                    <button onclick="calcEvaluate()" class="p-3 rounded-xl accent-bg font-bold text-base shadow-md">=</button>
+                </div>
+
+                <!-- History Tape -->
+                <div class="mt-4 flex-1 flex flex-col min-h-[120px]">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-secondary">History</span>
+                        <button onclick="clearCalcHistory()" class="text-xs text-secondary hover:text-primary">Clear</button>
+                    </div>
+                    <div id="calc-history-list" class="flex-1 bg-main border border-theme rounded-xl p-2.5 overflow-y-auto space-y-1.5 text-xs font-mono-code">
+                        <p class="text-secondary text-center py-4">No calculations yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL B: QUICK ALGEBRA SOLVER & UNIT CONVERTER -->
+            <div id="tool-panel-solvers" class="hidden flex-1 p-4 overflow-y-auto space-y-5">
+                <!-- Quadratic Equation Solver -->
+                <div class="bg-main border border-theme rounded-2xl p-4 space-y-3">
+                    <h3 class="text-sm font-bold flex items-center gap-1.5">
+                        <i class="ph ph-function accent-text"></i> Quadratic Solver
+                    </h3>
+                    <p class="text-xs text-secondary">Solves <span class="font-mono-code">ax² + bx + c = 0</span></p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-[11px] text-secondary block mb-1">a</label>
+                            <input type="number" id="quad-a" value="1" step="any" class="w-full px-2.5 py-1.5 rounded-lg bg-surface border border-theme font-mono-code text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-secondary block mb-1">b</label>
+                            <input type="number" id="quad-b" value="-3" step="any" class="w-full px-2.5 py-1.5 rounded-lg bg-surface border border-theme font-mono-code text-sm">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-secondary block mb-1">c</label>
+                            <input type="number" id="quad-c" value="2" step="any" class="w-full px-2.5 py-1.5 rounded-lg bg-surface border border-theme font-mono-code text-sm">
+                        </div>
+                    </div>
+                    <button onclick="solveQuadratic()" class="w-full py-2 rounded-xl accent-bg text-xs font-semibold">
+                        Find Roots & Vertex
+                    </button>
+                    <div id="quad-result" class="p-3 rounded-xl bg-surface border border-theme text-xs font-mono-code space-y-1">
+                        <div>x₁ = 2, x₂ = 1</div>
+                        <div class="text-secondary">Vertex: (1.5, -0.25)</div>
+                    </div>
+                </div>
+
+                <!-- STEM Unit Converter -->
+                <div class="bg-main border border-theme rounded-2xl p-4 space-y-3">
+                    <h3 class="text-sm font-bold flex items-center gap-1.5">
+                        <i class="ph ph-arrows-left-right accent-text"></i> STEM Unit Converter
+                    </h3>
+                    <select id="unit-category" onchange="updateUnitOptions()" class="w-full px-3 py-2 rounded-xl bg-surface border border-theme text-xs">
+                        <option value="angle">Angles (Degrees / Radians)</option>
+                        <option value="length">Length (m, cm, km, in, ft, mi)</option>
+                        <option value="temp">Temperature (°C, °F, K)</option>
+                        <option value="energy">Energy (J, kJ, cal, kcal, eV)</option>
+                    </select>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="unit-input" value="180" oninput="convertUnits()" class="w-full px-3 py-2 rounded-xl bg-surface border border-theme font-mono-code text-sm">
+                        <select id="unit-from" onchange="convertUnits()" class="w-full px-2.5 py-2 rounded-xl bg-surface border border-theme text-xs"></select>
+                    </div>
+                    <div class="text-center text-secondary text-xs"><i class="ph ph-arrow-down"></i></div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div id="unit-output" class="w-full px-3 py-2 rounded-xl bg-elevated font-mono-code text-sm font-bold flex items-center overflow-x-auto">3.1416</div>
+                        <select id="unit-to" onchange="convertUnits()" class="w-full px-2.5 py-2 rounded-xl bg-surface border border-theme text-xs"></select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL C: POMODORO FOCUS TIMER -->
+            <div id="tool-panel-pomodoro" class="hidden flex-1 p-4 overflow-y-auto space-y-5">
+                <div class="bg-main border border-theme rounded-2xl p-6 text-center space-y-4">
+                    <div class="inline-flex p-1 rounded-xl bg-surface border border-theme">
+                        <button onclick="setPomodoroPhase('study')" id="pomo-phase-study" class="px-3 py-1 rounded-lg text-xs font-semibold accent-bg">Focus</button>
+                        <button onclick="setPomodoroPhase('short')" id="pomo-phase-short" class="px-3 py-1 rounded-lg text-xs font-semibold text-secondary">Short Break</button>
+                        <button onclick="setPomodoroPhase('long')" id="pomo-phase-long" class="px-3 py-1 rounded-lg text-xs font-semibold text-secondary">Long Break</button>
+                    </div>
+
+                    <div id="main-pomo-display" class="font-mono-code text-5xl font-bold tracking-wider py-3">
+                        25:00
+                    </div>
+
+                    <div class="flex items-center justify-center gap-3">
+                        <button onclick="togglePomodoro()" id="main-pomo-btn" class="px-6 py-2.5 rounded-xl accent-bg font-semibold text-sm flex items-center gap-2 shadow-md">
+                            <i class="ph-fill ph-play"></i> Start
+                        </button>
+                        <button onclick="resetPomodoro()" class="p-2.5 rounded-xl bg-surface border border-theme hover:bg-elevated" title="Reset Timer">
+                            <i class="ph ph-arrow-counter-clockwise text-lg"></i>
+                        </button>
+                    </div>
+
+                    <div class="pt-3 border-t border-theme flex items-center justify-between text-xs text-secondary">
+                        <span>Completed Sessions:</span>
+                        <span id="pomo-sessions-count" class="font-mono-code font-bold text-primary">0</span>
+                    </div>
+                </div>
+
+                <!-- Custom Interval Settings -->
+                <div class="bg-main border border-theme rounded-2xl p-4 space-y-3">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-secondary">Custom Durations (Minutes)</h4>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div>
+                            <label class="text-[11px] text-secondary block mb-1">Focus</label>
+                            <input type="number" id="pomo-study-min" value="25" min="1" max="120" onchange="updatePomoDurations()" class="w-full px-2 py-1.5 rounded-lg bg-surface border border-theme font-mono-code text-sm text-center">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-secondary block mb-1">Short</label>
+                            <input type="number" id="pomo-short-min" value="5" min="1" max="30" onchange="updatePomoDurations()" class="w-full px-2 py-1.5 rounded-lg bg-surface border border-theme font-mono-code text-sm text-center">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-secondary block mb-1">Long</label>
+                            <input type="number" id="pomo-long-min" value="15" min="5" max="60" onchange="updatePomoDurations()" class="w-full px-2 py-1.5 rounded-lg bg-surface border border-theme font-mono-code text-sm text-center">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-surface border border-theme rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in">
+            <div class="px-6 py-4 border-b border-theme flex items-center justify-between">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i class="ph ph-gear accent-text"></i> Hub Settings
+                </h3>
+                <button onclick="closeSettingsModal()" class="p-1.5 rounded-xl hover:bg-elevated text-secondary hover:text-primary">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+                <!-- Theme Selection -->
+                <div>
+                    <label class="text-xs font-semibold uppercase tracking-wider text-secondary block mb-2.5">Color Theme</label>
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <button onclick="setTheme('dark')" id="theme-btn-dark" class="theme-option p-3 rounded-xl border border-theme bg-[#0f172a] text-slate-100 text-left text-xs font-semibold flex items-center justify-between">
+                            <span>Slate Dark</span>
+                            <span class="w-3 h-3 rounded-full bg-sky-400"></span>
+                        </button>
+                        <button onclick="setTheme('light')" id="theme-btn-light" class="theme-option p-3 rounded-xl border border-theme bg-white text-slate-900 text-left text-xs font-semibold flex items-center justify-between">
+                            <span>Crisp Light</span>
+                            <span class="w-3 h-3 rounded-full bg-blue-600"></span>
+                        </button>
+                        <button onclick="setTheme('midnight')" id="theme-btn-midnight" class="theme-option p-3 rounded-xl border border-theme bg-[#050814] text-indigo-200 text-left text-xs font-semibold flex items-center justify-between">
+                            <span>Midnight Blue</span>
+                            <span class="w-3 h-3 rounded-full bg-indigo-400"></span>
+                        </button>
+                        <button onclick="setTheme('sepia')" id="theme-btn-sepia" class="theme-option p-3 rounded-xl border border-theme bg-[#f4ecd8] text-[#3b3224] text-left text-xs font-semibold flex items-center justify-between">
+                            <span>Warm Paper</span>
+                            <span class="w-3 h-3 rounded-full bg-amber-700"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Angle Mode -->
+                <div class="flex items-center justify-between pt-2 border-t border-theme">
+                    <div>
+                        <p class="text-sm font-semibold">Trigonometry Angle Unit</p>
+                        <p class="text-xs text-secondary">Syncs with Calculator & Unit Converter</p>
+                    </div>
+                    <div class="flex p-1 rounded-xl bg-elevated">
+                        <button onclick="setAngleMode('RAD')" id="settings-rad-btn" class="px-3 py-1 rounded-lg text-xs font-mono-code font-bold accent-bg">RAD</button>
+                        <button onclick="setAngleMode('DEG')" id="settings-deg-btn" class="px-3 py-1 rounded-lg text-xs font-mono-code font-bold text-secondary">DEG</button>
+                    </div>
+                </div>
+
+                <!-- Decimal Precision -->
+                <div class="flex items-center justify-between pt-2 border-t border-theme">
+                    <div>
+                        <p class="text-sm font-semibold">Decimal Precision</p>
+                        <p class="text-xs text-secondary">Rounding for calculator outputs</p>
+                    </div>
+                    <select id="settings-precision" onchange="setPrecision(this.value)" class="px-3 py-1.5 rounded-xl bg-elevated border border-theme text-xs font-mono-code">
+                        <option value="2">2 decimals</option>
+                        <option value="4">4 decimals</option>
+                        <option value="6" selected>6 decimals</option>
+                        <option value="full">Full (12)</option>
+                    </select>
+                </div>
+
+                <!-- Font Size -->
+                <div class="pt-2 border-t border-theme">
+                    <div class="flex justify-between mb-1.5">
+                        <span class="text-sm font-semibold">Interface Text Scale</span>
+                        <span id="font-size-label" class="text-xs font-mono-code accent-text">100% (16px)</span>
+                    </div>
+                    <input type="range" id="settings-font-size" min="14" max="20" value="16" oninput="setFontSize(this.value)" class="w-full accent-sky-500">
+                </div>
+
+                <!-- Reset Data -->
+                <div class="pt-4 border-t border-theme">
+                    <button onclick="resetAllUserData()" class="w-full py-2.5 rounded-xl bg-rose-500/15 text-rose-400 hover:bg-rose-500/25 border border-rose-500/30 text-xs font-semibold transition">
+                        Reset Pinned Formulas & Scratchpad Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULL-SCREEN JSDELIVR HTML OVERLAY -->
+    <!-- FULL-SCREEN HELPER HTML OVERLAY -->
+    <div id="jsdelivr-modal" class="hidden fixed inset-0 z-50 bg-main flex flex-col">
+        <!-- Minimal Top Bar to Reload or Close -->
+        <div class="h-12 px-4 bg-surface border-b border-theme flex items-center justify-between gap-3 shrink-0 shadow-sm">
+            <div class="flex items-center gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg accent-bg flex items-center justify-center shrink-0">
+                    <i class="ph-bold ph-browser text-sm"></i>
+                </div>
+                <span class="text-xs sm:text-sm font-semibold truncate">Helper</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="loadJsdelivrHtmlFullscreen(true)" class="px-3 py-1.5 rounded-xl bg-elevated border border-theme text-xs font-medium hover:opacity-85 transition flex items-center gap-1.5" title="Reload Helper">
+                    <i class="ph ph-arrow-clockwise"></i>
+                    <span class="hidden sm:inline">Reload</span>
+                </button>
+                <button onclick="closeJsdelivrModal()" class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition flex items-center gap-1.5 shadow-sm" title="Close Overlay">
+                    <i class="ph-bold ph-x"></i>
+                    <span>Close</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Full-Viewport HTML Frame -->
+        <div class="flex-1 w-full bg-white relative overflow-hidden">
+            <div id="jsdelivr-loading-indicator" class="hidden absolute inset-0 bg-main/90 flex flex-col items-center justify-center gap-2 text-sm text-secondary z-10">
+                <i class="ph ph-spinner animate-spin text-2xl accent-text"></i>
+                <span>Loading Helper...</span>
+            </div>
+            <iframe id="jsdelivr-html-iframe" sandbox="allow-scripts allow-forms allow-same-origin allow-popups allow-modals" class="w-full h-full border-0 block"></iframe>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // ==========================================
+        // 1. FORMULA DATABASE (ALGEBRA THROUGH CALC & STATS)
+        // ==========================================
+        const FORMULAS_DB = [
+            // ALGEBRA
+            { id: 'alg-1', category: 'Algebra', title: 'Quadratic Formula', latex: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}', desc: 'Solves standard quadratic equations of the form ax² + bx + c = 0.', keywords: 'roots zeros parabola discriminant' },
+            { id: 'alg-2', category: 'Algebra', title: 'Slope-Intercept Form', latex: 'y = mx + b', desc: 'Equation of a line with slope m and y-intercept (0, b).', keywords: 'linear line graph rate of change' },
+            { id: 'alg-3', category: 'Algebra', title: 'Point-Slope Form', latex: 'y - y_1 = m(x - x_1)', desc: 'Equation of a line passing through point (x₁, y₁) with slope m.', keywords: 'linear line tangent' },
+            { id: 'alg-4', category: 'Algebra', title: 'Difference of Squares', latex: 'a^2 - b^2 = (a - b)(a + b)', desc: 'Factors the difference of two squared terms.', keywords: 'factoring polynomials binomial' },
+            { id: 'alg-5', category: 'Algebra', title: 'Properties of Logarithms (Product & Quotient)', latex: '\\log_b(xy) = \\log_b x + \\log_b y, \\quad \\log_b\\!\\left(\\frac{x}{y}\\right) = \\log_b x - \\log_b y', desc: 'Expands or condenses logarithms with matching bases.', keywords: 'ln log rules exponents' },
+            { id: 'alg-6', category: 'Algebra', title: 'Change of Base Formula', latex: '\\log_b(x) = \\frac{\\ln(x)}{\\ln(b)} = \\frac{\\log(x)}{\\log(b)}', desc: 'Evaluates any base logarithm using natural or base-10 logs.', keywords: 'logarithm calculator base' },
+            { id: 'alg-7', category: 'Algebra', title: 'Compound Interest', latex: 'A = P\\left(1 + \\frac{r}{n}\\right)^{nt}', desc: 'Future value A for principal P, annual rate r, compounded n times per year for t years.', keywords: 'exponential growth finance' },
+
+            // GEOMETRY
+            { id: 'geo-1', category: 'Geometry', title: 'Pythagorean Theorem', latex: 'a^2 + b^2 = c^2', desc: 'Relates legs a, b and hypotenuse c of a right triangle.', keywords: 'right triangle distance' },
+            { id: 'geo-2', category: 'Geometry', title: 'Distance & Midpoint Formulas', latex: 'd = \\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}, \\quad M = \\left(\\frac{x_1+x_2}{2}, \\frac{y_1+y_2}{2}\\right)', desc: 'Finds Euclidean distance and midpoint between two coordinate points.', keywords: 'coordinate plane segment' },
+            { id: 'geo-3', category: 'Geometry', title: 'Circle Area & Circumference', latex: 'A = \\pi r^2, \\quad C = 2\\pi r = \\pi d', desc: 'Area and perimeter of a circle with radius r and diameter d.', keywords: 'pi radius diameter' },
+            { id: 'geo-4', category: 'Geometry', title: 'Sphere Volume & Surface Area', latex: 'V = \\frac{4}{3}\\pi r^3, \\quad S = 4\\pi r^2', desc: '3D volume and surface area of a sphere of radius r.', keywords: '3d solid ball' },
+            { id: 'geo-5', category: 'Geometry', title: 'Cylinder & Cone Volume', latex: 'V_{\\text{cyl}} = \\pi r^2 h, \\quad V_{\\text{cone}} = \\frac{1}{3}\\pi r^2 h', desc: 'Volumes of right circular cylinders and cones with radius r and height h.', keywords: '3d solid prism' },
+
+            // TRIGONOMETRY
+            { id: 'trig-1', category: 'Trigonometry', title: 'Pythagorean Identities', latex: '\\sin^2\\theta + \\cos^2\\theta = 1, \\quad 1 + \\tan^2\\theta = \\sec^2\\theta', desc: 'Fundamental trigonometric identities derived from the unit circle.', keywords: 'sin cos tan sec unit circle' },
+            { id: 'trig-2', category: 'Trigonometry', title: 'Law of Sines', latex: '\\frac{\\sin A}{a} = \\frac{\\sin B}{b} = \\frac{\\sin C}{c}', desc: 'Relates side lengths to sines of opposite angles in any triangle.', keywords: 'oblique triangle angles' },
+            { id: 'trig-3', category: 'Trigonometry', title: 'Law of Cosines', latex: 'c^2 = a^2 + b^2 - 2ab\\cos C', desc: 'Generalizes the Pythagorean theorem to any triangle (SAS or SSS).', keywords: 'oblique triangle sides' },
+            { id: 'trig-4', category: 'Trigonometry', title: 'Double-Angle Identities', latex: '\\sin(2\\theta) = 2\\sin\\theta\\cos\\theta, \\quad \\cos(2\\theta) = \\cos^2\\theta - \\sin^2\\theta', desc: 'Expresses trig functions of 2θ in terms of single angles θ.', keywords: 'trig identities half angle' },
+            { id: 'trig-5', category: 'Trigonometry', title: 'Arc Length & Sector Area', latex: 's = r\\theta, \\quad A = \\frac{1}{2}r^2\\theta \\quad (\\theta \\text{ in radians})', desc: 'Calculates circular arc length and sector area for central angle θ in radians.', keywords: 'circle radians angle' },
+
+            // PRE-CALCULUS
+            { id: 'pre-1', category: 'Pre-Calculus', title: 'Arithmetic Sequence & Series', latex: 'a_n = a_1 + (n-1)d, \\quad S_n = \\frac{n}{2}(a_1 + a_n)', desc: 'nth term and partial sum of a sequence with common difference d.', keywords: 'series sum progression' },
+            { id: 'pre-2', category: 'Pre-Calculus', title: 'Geometric Sequence & Infinite Series', latex: 'a_n = a_1 r^{n-1}, \\quad S_\\infty = \\frac{a_1}{1 - r} \\; (|r| < 1)', desc: 'nth term and convergent infinite sum with common ratio r.', keywords: 'series ratio convergence' },
+            { id: 'pre-3', category: 'Pre-Calculus', title: 'Standard Equation of a Circle', latex: '(x - h)^2 + (y - k)^2 = r^2', desc: 'Conic section centered at (h, k) with radius r.', keywords: 'conics center radius' },
+            { id: 'pre-4', category: 'Pre-Calculus', title: 'Binomial Theorem', latex: '(x + y)^n = \\sum_{k=0}^{n} \\binom{n}{k} x^{n-k} y^k', desc: 'Algebraic expansion of powers of a binomial using combinations.', keywords: 'combinations pascal triangle' },
+            { id: 'pre-5', category: 'Pre-Calculus', title: 'Dot Product of Vectors', latex: '\\mathbf{u} \\cdot \\mathbf{v} = u_1 v_1 + u_2 v_2 = \\|\\mathbf{u}\\|\\|\\mathbf{v}\\|\\cos\\theta', desc: 'Scalar product used to test orthogonality and find angles between vectors.', keywords: 'vectors angle orthogonal' },
+
+            // CALCULUS
+            { id: 'calc-1', category: 'Calculus', title: 'Limit Definition of Derivative', latex: "f'(x) = \\lim_{h \\to 0} \\frac{f(x + h) - f(x)}{h}", desc: 'Instantaneous rate of change and slope of the tangent line at x.', keywords: 'difference quotient tangent slope' },
+            { id: 'calc-2', category: 'Calculus', title: 'Power, Product & Quotient Rules', latex: '\\frac{d}{dx}[x^n] = nx^{n-1}, \\quad (fg)\' = f\'g + fg\', \\quad \\left(\\frac{f}{g}\\right)\' = \\frac{f\'g - fg\'}{g^2}', desc: 'Core differentiation rules for polynomials, products, and rational functions.', keywords: 'derivatives differentiation' },
+            { id: 'calc-3', category: 'Calculus', title: 'Chain Rule', latex: '\\frac{d}{dx}[f(g(x))] = f\'(g(x)) \\cdot g\'(x)', desc: 'Differentiates composite functions from the outside in.', keywords: 'composite derivative' },
+            { id: 'calc-4', category: 'Calculus', title: 'Fundamental Theorem of Calculus', latex: '\\int_a^b f(x)\\,dx = F(b) - F(a), \\quad \\text{where } F\'(x) = f(x)', desc: 'Connects definite integration with antiderivatives to compute net signed area.', keywords: 'integral area antiderivative' },
+            { id: 'calc-5', category: 'Calculus', title: 'Integration by Parts', latex: '\\int u\\,dv = uv - \\int v\\,du', desc: 'Product rule analog for integrating products of functions (LIATE rule).', keywords: 'integral antiderivative' },
+            { id: 'calc-6', category: 'Calculus', title: 'Taylor & Maclaurin Series', latex: 'f(x) = \\sum_{n=0}^{\\infty} \\frac{f^{(n)}(a)}{n!}(x - a)^n', desc: 'Represents smooth functions as infinite power series centered at x = a.', keywords: 'series approximation polynomial' },
+
+            // STATISTICS
+            { id: 'stat-1', category: 'Statistics', title: 'Sample Mean & Standard Deviation', latex: '\\bar{x} = \\frac{\\sum x_i}{n}, \\quad s = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n - 1}}', desc: 'Measures of center and spread for a sample dataset of size n.', keywords: 'average variance spread' },
+            { id: 'stat-2', category: 'Statistics', title: 'Z-Score (Standard Score)', latex: 'z = \\frac{x - \\mu}{\\sigma}', desc: 'Number of standard deviations σ a value x lies from the population mean μ.', keywords: 'normal distribution bell curve' },
+            { id: 'stat-3', category: 'Statistics', title: 'Conditional Probability & Bayes\' Theorem', latex: 'P(A|B) = \\frac{P(A \\cap B)}{P(B)} = \\frac{P(B|A)P(A)}{P(B)}', desc: 'Probability of event A occurring given that event B has occurred.', keywords: 'probability bayes independent' },
+            { id: 'stat-4', category: 'Statistics', title: 'Binomial Probability Distribution', latex: 'P(X = k) = \\binom{n}{k} p^k (1 - p)^{n - k}', desc: 'Probability of k successes in n independent Bernoulli trials with probability p.', keywords: 'discrete probability trials' },
+            { id: 'stat-5', category: 'Statistics', title: 'Confidence Interval for Population Mean', latex: '\\bar{x} \\pm z^* \\frac{\\sigma}{\\sqrt{n}} \\quad \\text{or} \\quad \\bar{x} \\pm t^* \\frac{s}{\\sqrt{n}}', desc: 'Estimates a population parameter with a specified confidence level.', keywords: 'inference margin of error' }
+        ];
+
+        // ==========================================
+        // 2. APPLICATION STATE & STORAGE
+        // ==========================================
+        const state = {
+            currentView: 'formulas',
+            selectedCategory: 'all',
+            searchQuery: '',
+            pinnedIds: JSON.parse(localStorage.getItem('nexus_pinned') || '["alg-1","geo-1","trig-1","calc-2"]'),
+            notes: localStorage.getItem('nexus_notes') || '',
+            theme: localStorage.getItem('nexus_theme') || 'dark',
+            angleMode: localStorage.getItem('nexus_angle') || 'RAD',
+            precision: localStorage.getItem('nexus_precision') || '6',
+            fontSize: parseInt(localStorage.getItem('nexus_fontsize') || '16', 10),
+            // Calculator state
+            calcExpr: '',
+            calcLastAns: 0,
+            calcHistory: [],
+            // Flashcards state
+            fcDeck: [],
+            fcIndex: 0,
+            fcFlipped: false,
+            fcMastered: new Set(),
+            // Pomodoro state
+            pomoPhase: 'study',
+            pomoDurations: { study: 25 * 60, short: 5 * 60, long: 15 * 60 },
+            pomoRemaining: 25 * 60,
+            pomoRunning: false,
+            pomoInterval: null,
+            pomoSessions: 0
+        };
+
+        // ==========================================
+        // 3. INITIALIZATION
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            applyTheme(state.theme);
+            setFontSize(state.fontSize, false);
+            setAngleMode(state.angleMode, false);
+            document.getElementById('settings-precision').value = state.precision;
+
+            // Load scratchpad
+            const pad = document.getElementById('study-scratchpad');
+            pad.value = state.notes;
+            pad.addEventListener('input', () => {
+                state.notes = pad.value;
+                localStorage.setItem('nexus_notes', state.notes);
+                const status = document.getElementById('notes-save-status');
+                status.innerHTML = '<i class="ph-fill ph-check-circle text-emerald-400"></i> Saved';
+            });
+
+            // Search input listener
+            const searchInput = document.getElementById('formula-search');
+            searchInput.addEventListener('input', (e) => {
+                state.searchQuery = e.target.value.trim().toLowerCase();
+                document.getElementById('clear-search-btn').classList.toggle('hidden', !state.searchQuery);
+                renderFormulas();
+            });
+
+            // Mobile menu button
+            document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+                document.getElementById('left-sidebar').classList.toggle('-translate-x-full');
+            });
+
+            // Keyboard support for calculator
+            document.addEventListener('keydown', (e) => {
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+                if (!document.getElementById('jsdelivr-modal').classList.contains('hidden')) {
+                    if (e.key === 'Escape') closeJsdelivrModal();
+                    return;
+                }
+                if (e.key === 'Escape') closeSettingsModal();
+            });
+
+            updatePinnedBadge();
+            renderFormulas();
+            updateUnitOptions();
+            solveQuadratic();
+            initFlashcards();
+        });
+
+        // ==========================================
+        // 4. NAVIGATION & WORKSPACE VIEWS
+        // ==========================================
+        window.switchMainView = function(viewName) {
+            state.currentView = viewName;
+            ['formulas', 'flashcards', 'notes'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
+                const pill = document.getElementById(`nav-pill-${v}`);
+                if (pill) {
+                    if (v === viewName) {
+                        pill.classList.add('accent-bg');
+                        pill.classList.remove('bg-elevated', 'text-primary');
+                    } else {
+                        pill.classList.remove('accent-bg');
+                        pill.classList.add('bg-elevated', 'text-primary');
+                    }
+                }
+            });
+            if (viewName === 'flashcards') initFlashcards();
+        };
+
+        window.closeMobileMenu = function() {
+            document.getElementById('left-sidebar').classList.add('-translate-x-full');
+        };
+
+        window.toggleRightDrawer = function() {
+            const drawer = document.getElementById('right-tools-drawer');
+            drawer.classList.toggle('translate-x-full');
+        };
+
+        window.switchToolTab = function(tabName) {
+            ['calc', 'solvers', 'pomodoro'].forEach(t => {
+                document.getElementById(`tool-panel-${t}`).classList.toggle('hidden', t !== tabName);
+                const btn = document.getElementById(`tool-tab-${t}`);
+                if (t === tabName) {
+                    btn.classList.add('accent-bg');
+                } else {
+                    btn.classList.remove('accent-bg');
+                }
+            });
+        };
+
+        // ==========================================
+        // 5. FORMULA HUB RENDERING & PINNING
+        // ==========================================
+        window.selectCategory = function(cat) {
+            state.selectedCategory = cat;
+            if (state.currentView !== 'formulas') switchMainView('formulas');
+            closeMobileMenu();
+
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('accent-bg');
+            });
+            const activeBtn = document.getElementById(`cat-btn-${cat}`);
+            if (activeBtn) activeBtn.classList.add('accent-bg');
+
+            const titleMap = {
+                'all': 'All STEM Formulas',
+                'pinned': 'Pinned Quick Sheet',
+                'Algebra': 'Algebra 1 & 2 Formulas',
+                'Geometry': 'Geometry Formulas',
+                'Trigonometry': 'Trigonometry Identities & Laws',
+                'Pre-Calculus': 'Pre-Calculus Formulas',
+                'Calculus': 'Calculus Derivatives & Integrals',
+                'Statistics': 'Probability & Statistics Formulas'
+            };
+            document.getElementById('current-category-title').textContent = titleMap[cat] || cat;
+            renderFormulas();
+        };
+
+        window.clearSearch = function() {
+            state.searchQuery = '';
+            document.getElementById('formula-search').value = '';
+            document.getElementById('clear-search-btn').classList.add('hidden');
+            renderFormulas();
+        };
+
+        function renderFormulas() {
+            const grid = document.getElementById('formulas-grid');
+            const emptyState = document.getElementById('empty-formulas-state');
+
+            const filtered = FORMULAS_DB.filter(item => {
+                const matchesCat = state.selectedCategory === 'all'
+                    || (state.selectedCategory === 'pinned' && state.pinnedIds.includes(item.id))
+                    || item.category === state.selectedCategory;
+
+                if (!matchesCat) return false;
+                if (!state.searchQuery) return true;
+
+                const hay = `${item.title} ${item.category} ${item.desc} ${item.keywords}`.toLowerCase();
+                return hay.includes(state.searchQuery);
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = filtered.map(item => {
+                const isPinned = state.pinnedIds.includes(item.id);
+                return `
+                    <div class="bg-surface border border-theme rounded-2xl p-5 flex flex-col justify-between shadow-sm hover:border-sky-500/50 transition">
+                        <div>
+                            <div class="flex items-start justify-between gap-2 mb-3">
+                                <div>
+                                    <span class="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-elevated accent-text">${item.category}</span>
+                                    <h3 class="font-bold text-base mt-2">${item.title}</h3>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="copyFormulaLatex('${item.id}')" class="p-2 rounded-xl bg-elevated hover:opacity-80 text-secondary hover:text-primary transition" title="Copy LaTeX">
+                                        <i class="ph ph-copy"></i>
+                                    </button>
+                                    <button onclick="togglePinFormula('${item.id}')" class="p-2 rounded-xl bg-elevated hover:opacity-80 transition ${isPinned ? 'text-amber-400' : 'text-secondary'}" title="${isPinned ? 'Unpin' : 'Pin to Quick Sheet'}">
+                                        <i class="${isPinned ? 'ph-fill' : 'ph'} ph-push-pin"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="katex-render my-3 p-3.5 rounded-xl bg-main border border-theme overflow-x-auto text-center" data-latex="${item.latex.replace(/"/g, '&quot;')}"></div>
+                        </div>
+                        <p class="text-xs text-secondary leading-relaxed mt-2">${item.desc}</p>
+                    </div>
+                `;
+            }).join('');
+
+            renderAllKatex();
+        }
+
+        function renderAllKatex() {
+            if (typeof katex === 'undefined') {
+                setTimeout(renderAllKatex, 120);
+                return;
+            }
+            document.querySelectorAll('.katex-render').forEach(el => {
+                const tex = el.getAttribute('data-latex');
+                if (tex) {
+                    try {
+                        katex.render(tex, el, { throwOnError: false, displayMode: false });
+                    } catch (e) {
+                        el.textContent = tex;
+                    }
+                }
+            });
+        }
+
+        window.togglePinFormula = function(id) {
+            const idx = state.pinnedIds.indexOf(id);
+            if (idx > -1) {
+                state.pinnedIds.splice(idx, 1);
+                showToast('Removed from Quick Sheet');
+            } else {
+                state.pinnedIds.push(id);
+                showToast('Pinned to Quick Sheet');
+            }
+            localStorage.setItem('nexus_pinned', JSON.stringify(state.pinnedIds));
+            updatePinnedBadge();
+            renderFormulas();
+        };
+
+        function updatePinnedBadge() {
+            document.getElementById('pinned-count-badge').textContent = state.pinnedIds.length;
+        }
+
+        window.copyFormulaLatex = function(id) {
+            const item = FORMULAS_DB.find(f => f.id === id);
+            if (!item) return;
+            copyTextToClipboard(item.latex);
+            showToast(`Copied LaTeX for "${item.title}"`);
+        };
+
+        // ==========================================
+        // 6. SCIENTIFIC CALCULATOR
+        // ==========================================
+        window.calcInput = function(val) {
+            state.calcExpr += val;
+            updateCalcDisplay();
+        };
+
+        window.calcFunc = function(fn) {
+            state.calcExpr += fn;
+            updateCalcDisplay();
+        };
+
+        window.calcBackspace = function() {
+            state.calcExpr = state.calcExpr.slice(0, -1);
+            updateCalcDisplay();
+        };
+
+        window.calcClear = function() {
+            state.calcExpr = '';
+            document.getElementById('calc-expression').textContent = '';
+            document.getElementById('calc-display').textContent = '0';
+        };
+
+        window.calcUseAns = function() {
+            state.calcExpr += String(state.calcLastAns);
+            updateCalcDisplay();
+        };
+
+        function updateCalcDisplay() {
+            document.getElementById('calc-display').textContent = state.calcExpr || '0';
+        }
+
+        function factorial(n) {
+            if (n < 0 || !Number.isInteger(n)) return NaN;
+            if (n > 170) return Infinity;
+            let res = 1;
+            for (let i = 2; i <= n; i++) res *= i;
+            return res;
+        }
+
+        window.calcEvaluate = function() {
+            if (!state.calcExpr) return;
+            const raw = state.calcExpr;
+            try {
+                // Balance unclosed parentheses automatically
+                const openCount = (raw.match(/\(/g) || []).length;
+                const closeCount = (raw.match(/\)/g) || []).length;
+                let expr = raw + ')'.repeat(Math.max(0, openCount - closeCount));
+
+                const toRad = (x) => state.angleMode === 'DEG' ? (x * Math.PI / 180) : x;
+                const fromRad = (x) => state.angleMode === 'DEG' ? (x * 180 / Math.PI) : x;
+
+                const scope = {
+                    sin: (x) => Math.sin(toRad(x)),
+                    cos: (x) => Math.cos(toRad(x)),
+                    tan: (x) => Math.tan(toRad(x)),
+                    asin: (x) => fromRad(Math.asin(x)),
+                    acos: (x) => fromRad(Math.acos(x)),
+                    atan: (x) => fromRad(Math.atan(x)),
+                    ln: Math.log,
+                    log: Math.log10,
+                    sqrt: Math.sqrt,
+                    fact: factorial
+                };
+
+                // Transform expression safely for evaluation
+                let parsed = expr
+                    .replace(/π/g, `(${Math.PI})`)
+                    .replace(/\be\b/g, `(${Math.E})`)
+                    .replace(/(\d+(?:\.\d+)?|\))!/g, 'fact($1)')
+                    .replace(/\^/g, '**');
+
+                const fn = new Function('scope', `with(scope){ return (${parsed}); }`);
+                const result = fn(scope);
+
+                if (typeof result !== 'number' || Number.isNaN(result)) {
+                    throw new Error('Math Error');
+                }
+
+                const formatted = formatCalcResult(result);
+                state.calcLastAns = Number(formatted);
+                document.getElementById('calc-expression').textContent = raw + ' =';
+                document.getElementById('calc-display').textContent = formatted;
+                state.calcExpr = String(formatted);
+
+                state.calcHistory.unshift({ expr: raw, res: formatted });
+                if (state.calcHistory.length > 25) state.calcHistory.pop();
+                renderCalcHistory();
+            } catch (err) {
+                document.getElementById('calc-expression').textContent = raw;
+                document.getElementById('calc-display').textContent = 'Error';
+                state.calcExpr = '';
+            }
+        };
+
+        function formatCalcResult(num) {
+            if (!Number.isFinite(num)) return String(num);
+            if (Math.abs(num) < 1e-12) return '0';
+            if (state.precision === 'full') return String(Number(num.toPrecision(12)));
+            const dec = parseInt(state.precision, 10);
+            return String(Number(num.toFixed(dec)));
+        }
+
+        function renderCalcHistory() {
+            const list = document.getElementById('calc-history-list');
+            if (state.calcHistory.length === 0) {
+                list.innerHTML = '<p class="text-secondary text-center py-4">No calculations yet</p>';
+                return;
+            }
+            list.innerHTML = state.calcHistory.map(h => `
+                <div onclick="calcInput('${h.res}')" class="p-2 rounded-lg bg-surface border border-theme flex justify-between items-center cursor-pointer hover:border-sky-500/50">
+                    <span class="text-secondary truncate max-w-[140px]">${h.expr}</span>
+                    <span class="font-bold accent-text">${h.res}</span>
+                </div>
+            `).join('');
+        }
+
+        window.clearCalcHistory = function() {
+            state.calcHistory = [];
+            renderCalcHistory();
+        };
+
+        // ==========================================
+        // 7. QUADRATIC SOLVER & UNIT CONVERTER
+        // ==========================================
+        window.solveQuadratic = function() {
+            const a = parseFloat(document.getElementById('quad-a').value);
+            const b = parseFloat(document.getElementById('quad-b').value);
+            const c = parseFloat(document.getElementById('quad-c').value);
+            const out = document.getElementById('quad-result');
+
+            if (isNaN(a) || isNaN(b) || isNaN(c) || a === 0) {
+                out.innerHTML = '<div class="text-rose-400">Coefficient "a" must be non-zero.</div>';
+                return;
+            }
+
+            const disc = b * b - 4 * a * c;
+            const vx = (-b / (2 * a)).toFixed(3).replace(/\.?0+$/, '');
+            const vy = (a * vx * vx + b * vx + c).toFixed(3).replace(/\.?0+$/, '');
+
+            let rootsHtml = '';
+            if (disc > 0) {
+                const r1 = ((-b + Math.sqrt(disc)) / (2 * a)).toFixed(4).replace(/\.?0+$/, '');
+                const r2 = ((-b - Math.sqrt(disc)) / (2 * a)).toFixed(4).replace(/\.?0+$/, '');
+                rootsHtml = `<div>x₁ = ${r1}, x₂ = ${r2}</div>`;
+            } else if (disc === 0) {
+                const r = (-b / (2 * a)).toFixed(4).replace(/\.?0+$/, '');
+                rootsHtml = `<div>x = ${r} (Double Root)</div>`;
+            } else {
+                const real = (-b / (2 * a)).toFixed(3).replace(/\.?0+$/, '');
+                const imag = (Math.sqrt(-disc) / (2 * a)).toFixed(3).replace(/\.?0+$/, '');
+                rootsHtml = `<div>x = ${real} ± ${imag}i</div>`;
+            }
+
+            out.innerHTML = `
+                ${rootsHtml}
+                <div class="text-secondary">Discriminant Δ = ${disc.toFixed(3).replace(/\.?0+$/, '')}</div>
+                <div class="text-secondary">Vertex: (${vx}, ${vy})</div>
+            `;
+        };
+
+        const UNIT_DATA = {
+            angle: {
+                units: ['Degrees (°)', 'Radians (rad)'],
+                toBase: { 'Degrees (°)': v => v * Math.PI / 180, 'Radians (rad)': v => v },
+                fromBase: { 'Degrees (°)': v => v * 180 / Math.PI, 'Radians (rad)': v => v }
+            },
+            length: {
+                units: ['m', 'cm', 'km', 'in', 'ft', 'mi'],
+                toBase: { m: v => v, cm: v => v * 0.01, km: v => v * 1000, in: v => v * 0.0254, ft: v => v * 0.3048, mi: v => v * 1609.344 },
+                fromBase: { m: v => v, cm: v => v / 0.01, km: v => v / 1000, in: v => v / 0.0254, ft: v => v / 0.3048, mi: v => v / 1609.344 }
+            },
+            temp: {
+                units: ['°C', '°F', 'K'],
+                toBase: { '°C': v => v, '°F': v => (v - 32) * 5 / 9, 'K': v => v - 273.15 },
+                fromBase: { '°C': v => v, '°F': v => (v * 9 / 5) + 32, 'K': v => v + 273.15 }
+            },
+            energy: {
+                units: ['J', 'kJ', 'cal', 'kcal', 'eV'],
+                toBase: { J: v => v, kJ: v => v * 1000, cal: v => v * 4.184, kcal: v => v * 4184, eV: v => v * 1.602176634e-19 },
+                fromBase: { J: v => v, kJ: v => v / 1000, cal: v => v / 4.184, kcal: v => v / 4184, eV: v => v / 1.602176634e-19 }
+            }
+        };
+
+        window.updateUnitOptions = function() {
+            const cat = document.getElementById('unit-category').value;
+            const units = UNIT_DATA[cat].units;
+            const fromSel = document.getElementById('unit-from');
+            const toSel = document.getElementById('unit-to');
+            fromSel.innerHTML = units.map(u => `<option value="${u}">${u}</option>`).join('');
+            toSel.innerHTML = units.map((u, i) => `<option value="${u}" ${i === 1 ? 'selected' : ''}>${u}</option>`).join('');
+            convertUnits();
+        };
+
+        window.convertUnits = function() {
+            const cat = document.getElementById('unit-category').value;
+            const val = parseFloat(document.getElementById('unit-input').value);
+            const fromU = document.getElementById('unit-from').value;
+            const toU = document.getElementById('unit-to').value;
+            const out = document.getElementById('unit-output');
+
+            if (isNaN(val)) {
+                out.textContent = '—';
+                return;
+            }
+            const base = UNIT_DATA[cat].toBase[fromU](val);
+            const res = UNIT_DATA[cat].fromBase[toU](base);
+            out.textContent = Number(res.toPrecision(6));
+        };
+
+        // ==========================================
+        // 8. FLASHCARD QUIZ MODE
+        // ==========================================
+        window.initFlashcards = function() {
+            const deckType = document.getElementById('flashcard-deck-select').value;
+            let cards = FORMULAS_DB.filter(f => {
+                if (deckType === 'all') return true;
+                if (deckType === 'pinned') return state.pinnedIds.includes(f.id);
+                return f.category === deckType;
+            });
+            if (cards.length === 0) cards = [...FORMULAS_DB];
+            state.fcDeck = [...cards];
+            state.fcIndex = 0;
+            state.fcFlipped = false;
+            state.fcMastered.clear();
+            renderFlashcard();
+        };
+
+        window.shuffleFlashcards = function() {
+            for (let i = state.fcDeck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [state.fcDeck[i], state.fcDeck[j]] = [state.fcDeck[j], state.fcDeck[i]];
+            }
+            state.fcIndex = 0;
+            state.fcFlipped = false;
+            renderFlashcard();
+            showToast('Deck shuffled');
+        };
+
+        function renderFlashcard() {
+            const card = state.fcDeck[state.fcIndex];
+            if (!card) return;
+            document.getElementById('flashcard-inner').classList.toggle('rotate-y-180', state.fcFlipped);
+            document.getElementById('fc-front-badge').textContent = card.category;
+            document.getElementById('fc-front-title').textContent = card.title;
+            document.getElementById('fc-front-hint').textContent = card.desc;
+            document.getElementById('fc-back-desc').textContent = card.desc;
+
+            const mathEl = document.getElementById('fc-back-math');
+            mathEl.setAttribute('data-latex', card.latex);
+            mathEl.classList.add('katex-render');
+            renderAllKatex();
+
+            const total = state.fcDeck.length;
+            document.getElementById('flashcard-counter').textContent = `Card ${state.fcIndex + 1} of ${total}`;
+            document.getElementById('flashcard-progress').style.width = `${((state.fcIndex + 1) / total) * 100}%`;
+            document.getElementById('flashcard-mastered').textContent = `Mastered: ${state.fcMastered.size}`;
+        }
+
+        window.flipFlashcard = function() {
+            state.fcFlipped = !state.fcFlipped;
+            document.getElementById('flashcard-inner').classList.toggle('rotate-y-180', state.fcFlipped);
+        };
+
+        window.nextFlashcard = function() {
+            state.fcFlipped = false;
+            state.fcIndex = (state.fcIndex + 1) % state.fcDeck.length;
+            renderFlashcard();
+        };
+
+        window.prevFlashcard = function() {
+            state.fcFlipped = false;
+            state.fcIndex = (state.fcIndex - 1 + state.fcDeck.length) % state.fcDeck.length;
+            renderFlashcard();
+        };
+
+        window.markFlashcardMastered = function() {
+            const card = state.fcDeck[state.fcIndex];
+            if (card) state.fcMastered.add(card.id);
+            nextFlashcard();
+        };
+
+        // ==========================================
+        // 9. STUDY SCRATCHPAD
+        // ==========================================
+        window.insertSymbol = function(sym) {
+            const pad = document.getElementById('study-scratchpad');
+            const start = pad.selectionStart;
+            const end = pad.selectionEnd;
+            pad.value = pad.value.substring(0, start) + sym + pad.value.substring(end);
+            pad.focus();
+            pad.selectionStart = pad.selectionEnd = start + sym.length;
+            state.notes = pad.value;
+            localStorage.setItem('nexus_notes', state.notes);
+        };
+
+        window.copyNotes = function() {
+            const text = document.getElementById('study-scratchpad').value;
+            copyTextToClipboard(text);
+            showToast('Scratchpad copied to clipboard');
+        };
+
+        window.clearNotes = function() {
+            document.getElementById('study-scratchpad').value = '';
+            state.notes = '';
+            localStorage.setItem('nexus_notes', '');
+            showToast('Scratchpad cleared');
+        };
+
+        // ==========================================
+        // 10. POMODORO FOCUS TIMER
+        // ==========================================
+        window.togglePomodoro = function() {
+            if (state.pomoRunning) {
+                clearInterval(state.pomoInterval);
+                state.pomoRunning = false;
+            } else {
+                state.pomoRunning = true;
+                state.pomoInterval = setInterval(() => {
+                    if (state.pomoRemaining > 0) {
+                        state.pomoRemaining--;
+                        updatePomodoroDisplays();
+                    } else {
+                        clearInterval(state.pomoInterval);
+                        state.pomoRunning = false;
+                        playTimerChime();
+                        if (state.pomoPhase === 'study') {
+                            state.pomoSessions++;
+                            document.getElementById('pomo-sessions-count').textContent = state.pomoSessions;
+                            setPomodoroPhase('short');
+                            showToast('Focus session complete! Time for a break.');
+                        } else {
+                            setPomodoroPhase('study');
+                            showToast('Break finished! Ready to focus.');
+                        }
+                    }
+                }, 1000);
+            }
+            updatePomodoroDisplays();
+        };
+
+        window.resetPomodoro = function() {
+            clearInterval(state.pomoInterval);
+            state.pomoRunning = false;
+            state.pomoRemaining = state.pomoDurations[state.pomoPhase];
+            updatePomodoroDisplays();
+        };
+
+        window.setPomodoroPhase = function(phase) {
+            clearInterval(state.pomoInterval);
+            state.pomoRunning = false;
+            state.pomoPhase = phase;
+            state.pomoRemaining = state.pomoDurations[phase];
+
+            ['study', 'short', 'long'].forEach(p => {
+                const btn = document.getElementById(`pomo-phase-${p}`);
+                if (p === phase) {
+                    btn.classList.add('accent-bg');
+                    btn.classList.remove('text-secondary');
+                } else {
+                    btn.classList.remove('accent-bg');
+                    btn.classList.add('text-secondary');
+                }
+            });
+
+            const labels = { study: 'Study', short: 'Short Break', long: 'Long Break' };
+            document.getElementById('sidebar-pomo-status').textContent = labels[phase];
+            updatePomodoroDisplays();
+        };
+
+        window.updatePomoDurations = function() {
+            const s = Math.max(1, parseInt(document.getElementById('pomo-study-min').value || '25', 10));
+            const sh = Math.max(1, parseInt(document.getElementById('pomo-short-min').value || '5', 10));
+            const l = Math.max(1, parseInt(document.getElementById('pomo-long-min').value || '15', 10));
+            state.pomoDurations = { study: s * 60, short: sh * 60, long: l * 60 };
+            if (!state.pomoRunning) {
+                state.pomoRemaining = state.pomoDurations[state.pomoPhase];
+                updatePomodoroDisplays();
+            }
+        };
+
+        function updatePomodoroDisplays() {
+            const mins = String(Math.floor(state.pomoRemaining / 60)).padStart(2, '0');
+            const secs = String(state.pomoRemaining % 60).padStart(2, '0');
+            const formatted = `${mins}:${secs}`;
+            document.getElementById('sidebar-pomo-display').textContent = formatted;
+            document.getElementById('main-pomo-display').textContent = formatted;
+
+            const iconHtml = state.pomoRunning ? '<i class="ph-fill ph-pause"></i>' : '<i class="ph-fill ph-play"></i>';
+            document.getElementById('sidebar-pomo-btn').innerHTML = iconHtml;
+            document.getElementById('main-pomo-btn').innerHTML = `${iconHtml} ${state.pomoRunning ? 'Pause' : 'Start'}`;
+        }
+
+        function playTimerChime() {
+            try {
+                if (typeof Tone !== 'undefined') {
+                    const synth = new Tone.Synth().toDestination();
+                    synth.triggerAttackRelease('C5', '8n');
+                    setTimeout(() => synth.triggerAttackRelease('G5', '4n'), 180);
+                }
+            } catch (e) {}
+        }
+
+        // ==========================================
+        // 11. SETTINGS & UTILITIES
+        // ==========================================
+        window.openSettingsModal = function() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+        };
+
+        window.closeSettingsModal = function() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        };
+
+        window.setTheme = function(theme) {
+            state.theme = theme;
+            localStorage.setItem('nexus_theme', theme);
+            applyTheme(theme);
+        };
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+            document.querySelectorAll('.theme-option').forEach(btn => btn.classList.remove('ring-2', 'ring-sky-500'));
+            const active = document.getElementById(`theme-btn-${theme}`);
+            if (active) active.classList.add('ring-2', 'ring-sky-500');
+        }
+
+        window.toggleAngleMode = function() {
+            setAngleMode(state.angleMode === 'RAD' ? 'DEG' : 'RAD', true);
+        };
+
+        window.setAngleMode = function(mode, notify = true) {
+            state.angleMode = mode;
+            localStorage.setItem('nexus_angle', mode);
+            document.getElementById('header-angle-badge').textContent = mode;
+            document.getElementById('calc-mode-indicator').textContent = mode;
+
+            const radBtn = document.getElementById('settings-rad-btn');
+            const degBtn = document.getElementById('settings-deg-btn');
+            if (mode === 'RAD') {
+                radBtn.classList.add('accent-bg');
+                radBtn.classList.remove('text-secondary');
+                degBtn.classList.remove('accent-bg');
+                degBtn.classList.add('text-secondary');
+            } else {
+                degBtn.classList.add('accent-bg');
+                degBtn.classList.remove('text-secondary');
+                radBtn.classList.remove('accent-bg');
+                radBtn.classList.add('text-secondary');
+            }
+            if (notify) showToast(`Angle mode set to ${mode}`);
+        };
+
+        window.setPrecision = function(val) {
+            state.precision = val;
+            localStorage.setItem('nexus_precision', val);
+        };
+
+        window.setFontSize = function(px, save = true) {
+            state.fontSize = parseInt(px, 10);
+            document.documentElement.style.setProperty('--base-font-size', `${state.fontSize}px`);
+            document.getElementById('settings-font-size').value = state.fontSize;
+            const pct = Math.round((state.fontSize / 16) * 100);
+            document.getElementById('font-size-label').textContent = `${pct}% (${state.fontSize}px)`;
+            if (save) localStorage.setItem('nexus_fontsize', state.fontSize);
+        };
+
+        window.resetAllUserData = function() {
+            localStorage.removeItem('nexus_pinned');
+            localStorage.removeItem('nexus_notes');
+            state.pinnedIds = [];
+            state.notes = '';
+            document.getElementById('study-scratchpad').value = '';
+            updatePinnedBadge();
+            renderFormulas();
+            closeSettingsModal();
+            showToast('Saved bookmarks and notes cleared');
+        };
+
+        function copyTextToClipboard(text) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'px-4 py-2.5 rounded-xl bg-surface border border-theme shadow-lg text-xs font-medium flex items-center gap-2 transition-opacity duration-300';
+            toast.innerHTML = `<i class="ph-fill ph-info accent-text text-base"></i><span>${msg}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2200);
+        }
+
+        // ==========================================
+        // 12. FULL-SCREEN JSDELIVR HTML VIEWER
+        // ==========================================
+        const JSDELIVR_HTML_URL = 'https://cdn.jsdelivr.net/gh/brandstifter-ctrl/AfterspaceMovies@main/Afterspace%20-%20Helper.html';
+        let jsdelivrHtmlLoaded = false;
+
+        window.openJsdelivrModal = function() {
+            const modal = document.getElementById('jsdelivr-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+            if (!jsdelivrHtmlLoaded) {
+                window.loadJsdelivrHtmlFullscreen(false);
+            }
+        };
+
+        window.closeJsdelivrModal = function() {
+            const modal = document.getElementById('jsdelivr-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        };
+
+        window.loadJsdelivrHtmlFullscreen = async function(forceReload = false) {
+            const loader = document.getElementById('jsdelivr-loading-indicator');
+            const iframe = document.getElementById('jsdelivr-html-iframe');
+            if (!iframe) return;
+
+            if (jsdelivrHtmlLoaded && !forceReload) return;
+
+            if (loader) loader.classList.remove('hidden');
+            try {
+                const response = await fetch(JSDELIVR_HTML_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const htmlText = await response.text();
+
+                // Inject <base> tag so relative assets inside the HTML resolve via jsDelivr
+                const baseDir = JSDELIVR_HTML_URL.substring(0, JSDELIVR_HTML_URL.lastIndexOf('/') + 1);
+                const baseTag = `<base href="${baseDir}">`;
+                const finalHtml = /<head[^>]*>/i.test(htmlText)
+                    ? htmlText.replace(/<head[^>]*>/i, match => `${match}\n${baseTag}`)
+                    : `${baseTag}\n${htmlText}`;
+
+                iframe.srcdoc = finalHtml;
+                jsdelivrHtmlLoaded = true;
+            } catch (err) {
+                iframe.srcdoc = `<div style="font-family:sans-serif;padding:2rem;color:#ef4444;">Failed to load HTML from jsDelivr: ${err.message}</div>`;
+            } finally {
+                if (loader) loader.classList.add('hidden');
+            }
+        };
+    </script>
+</body>
+</html>
